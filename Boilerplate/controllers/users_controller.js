@@ -9,8 +9,7 @@ const common_utils = require('../utils/common_utils');
 module.exports = {
     createController: async (req, res) => {
         insert_data = req.body;
-        insert_data[constants.EMAIL_ADDRESS].trim();
-        insert_data[constants.PASSWORD].trim();
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
         password_array = await common_utils.encrypt_password(insert_data[constants.PASSWORD]);
         insert_data[constants.PASSWORD] = password_array[0];
         insert_data[constants.PASSWORD_SALT] = password_array[1];

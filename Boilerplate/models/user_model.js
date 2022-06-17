@@ -5,7 +5,7 @@ const static_data = require('../config/static_data');
 
 const UsersSchema = new mongoose.Schema({
     uid: {type: String, required: true, unique: true, default: uuidv4()},
-    name: {type: Object, required: true, unique: true},  // FORMAT -> {first: "a", middle: "b", last: "c"}
+    name: {type: Object, required: true},  // FORMAT -> {first: "a", middle: "b", last: "c"}
     email_address: {type: String, required: true, unique: true, lowercase: true},
     password: {type: String, required: true},
     password_salt: {type: String, reqruied: true},

@@ -1,6 +1,9 @@
 module.exports = {
     UID: "uid",
     NAME: "name",
+    FIRST: "first",
+    MIDDLE: "middle",
+    LAST: "last",
     EMAIL_ADDRESS: "email_address",
     PASSWORD: "password",
     PASSWORD_SALT: "password_salt",
