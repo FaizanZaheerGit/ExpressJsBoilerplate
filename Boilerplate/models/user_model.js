@@ -9,7 +9,7 @@ const UsersSchema = new mongoose.Schema({
     email_address: {type: String, required: true, unique: true, lowercase: true},
     password: {type: String, required: true},
     password_salt: {type: String, reqruied: true},
-    status: {type: Object, required: true, default: static_data.STATUSES[0]},
+    status: {type: Object, required: true, enum: static_data.STATUSES, default: static_data.STATUSES[0]},
     created_at: {type: Number, default: common_utils.get_current_epoch_time()},
     updated_at: {type: Number, default: common_utils.get_current_epoch_time()}
 });
