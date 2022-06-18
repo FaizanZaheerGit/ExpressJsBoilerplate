@@ -13,7 +13,10 @@ module.exports = {
     CODE_SUCCESS: 200,
     CODE_CREATED: 201,
     CODE_UNROCESSABLE_ENTITY: 422,
+    CODE_GENERAL_ERROR: 452,
     MESSAGE_SUCCESS: "Successful Response",
     MESSAGE_CREATED: (collection_name) => { return `${collection_name} created successfully` },
-    MESSAGE_NOT_FOUND: (params) => { return `${params[0]} with this ${params[1]} is not found` }
+    MESSAGE_NOT_FOUND: (params) => { return `${params[0]} with this ${params[1]} is not found` },
+    MESSAGE_GENERAL_ERROR: "Something Went Wrong",
+    MESSAGE_SERVER_ERROR: "Internal Server Error"
 };
