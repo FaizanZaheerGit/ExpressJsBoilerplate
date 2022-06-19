@@ -42,4 +42,14 @@ router.delete('/delete/:id', async (req, res) => {
     return usersController.deleteController(req, res);
 });
 
+router.post('/login', (req, res) => {
+    let required_list = [constants.EMAIL_ADDRESS, constants.PASSWORD];
+    let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
+    if (response["response_code"] != 200) {
+        return res.status(200).send(response)
+    }
+    req.body = response["response_data"];
+    return usersController.loginController(req, res);
+})
+
 module.exports = router;

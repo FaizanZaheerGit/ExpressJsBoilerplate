@@ -4,12 +4,26 @@ const userModel = require('../models/user_model');
 const userUtils = require('../utils/user_utils');
 const constants = require('../utils/constants');
 const common_utils = require('../utils/common_utils');
+const UsersModel = require('../models/user_model');
+const TokenModel = require('../models/token_model')
 
 
 module.exports = {
     createController: async (req, res) => {
+        /*
+            This function will validate and create a new user
+            parameters: request, response
+            return:
+        */
         insert_data = req.body;
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data.toLowerCase();
+        let existing_user = await database_layer.db_read_single_record(UsersModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
+        if(existing_user) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_ALREADY_EXISTS, null, responses.MESSAGE_ALREADY_EXISTS([constants.USER, constants.EMAIL_ADDRESS])
+            ))
+        }
         password_array = await common_utils.encrypt_password(insert_data[constants.PASSWORD]);
         insert_data[constants.PASSWORD] = password_array[0];
         insert_data[constants.PASSWORD_SALT] = password_array[1];
@@ -19,6 +33,12 @@ module.exports = {
             responses.get_response_object(responses.CODE_CREATED, {user: new_user_obj}, responses.MESSAGE_CREATED(constants.USER)));
     },
     readController: async(req, res) => {
+        /*
+            This function will read a list of all users, based on filters,
+            if no filters given, it returns all users
+            parameters: request, response
+            return:
+        */
         const read_filter = req.query || {};
         let users = await database_layer.db_read_multiple_records(userModel, read_filter);
         users = await userUtils.filter_user_object(users);
@@ -26,10 +46,15 @@ module.exports = {
             responses.get_response_object(responses.CODE_SUCCESS, {users: users}, responses.MESSAGE_SUCCESS));
     },
     updateController: async (req, res) => {
+        /*
+            This function will validate and update information of a existing user
+            parameters: request, response
+            return:
+        */
         const read_filter = { uid: req.body.uid };
         let user = await database_layer.db_read_single_record(userModel, read_filter);
         if (!user) {
-            let response_obj = responses.get_response_object(responses.CODE_UNROCESSABLE_ENTITY,
+            let response_obj = responses.get_response_object(responses.CODE_UNPROCESSABLE_ENTITY,
                 {}, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID]))
             delete response_obj.response_data;
             return res.status(responses.CODE_SUCCESS).send(response_obj);
@@ -42,10 +67,15 @@ module.exports = {
             {user: userUtils.get_user_object(update_user)}, responses.MESSAGE_SUCCESS));
     },
     deleteController: async (req, res) => {
+        /*
+            This function will delete a user
+            parameters: request, response
+            return:
+        */
         const delete_filter = { uid: req.params.id };
         let user = await database_layer.db_read_single_record(userModel, delete_filter);
         if (!user) {
-            let response_obj = responses.get_response_object(responses.CODE_UNROCESSABLE_ENTITY,
+            let response_obj = responses.get_response_object(responses.CODE_UNPROCESSABLE_ENTITY,
                 {}, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID]))
             delete response_obj.response_data;
             return res.status(responses.CODE_SUCCESS).send(response_obj);
@@ -54,5 +84,26 @@ module.exports = {
         let users = await database_layer.db_read_multiple_records(userModel, {});
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
             {users: userUtils.filter_user_object(users)}, responses.MESSAGE_SUCCESS));
+    },
+    loginController: async (req, res) => {
+        /*
+            This function will validate andlogin a user
+            parameters: request, response
+            return:
+        */
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data.toLowerCase();
+        let user = await database_layer.db_read_single_record(UsersModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
+        if(!user) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_UNPROCESSABLE_ENTITY, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD)
+                )
+        }
+        let is_password = common_utils.compare_password(insert_data[constants.PASSWORD], user[constants.PASSWORD])
+        if (!is_password) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_UNPROCESSABLE_ENTITY, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD)
+            )
+        }
     }
 }

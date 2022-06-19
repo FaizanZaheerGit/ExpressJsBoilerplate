@@ -1,20 +1,42 @@
-var bcrypt = require('bcryptjs');
-var config = require('../config/config');
+const bcrypt = require('bcryptjs');
+const config = require('../config/config');
 const responses = require('./responses');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
     get_current_epoch_time: () => {
+        /*
+            This function will return the current epoch time
+            parameters:
+            return:
+        */
         return Math.trunc(( Date.now() / 1000 ))
     },
     encrypt_password: async (password) => {
+        /*
+            This function will create a salt and encrypted password
+            parameters: password
+            return: encrypted password and salt
+        */
         const salt = await bcrypt.genSalt(config["SALT_WORK_FACTOR"]);
         const hashed_password = bcrypt.hashSync(password, salt);
         return [hashed_password, salt];
     },
     compare_password: async (input_password, user_password) => {
+        /*
+            This function will compare 2 encrypted passwords
+            parameters: input_password, user_password
+            return: boolean of comparison
+        */
         return await bcrypt.compare(input_password, user_password).catch((err) => false);
     },
     validate_request_body: async(request_body, required_params, optional_params) => {
+        /*
+            This function will validate a request body for values and required and optional parameter values,
+            and remove the extra paramters
+            parameters: request_body, requried_params, optional_params
+            return:
+        */
         var request_body_keys = Object.keys(request_body);
         var all = required_params.concat(optional_params);
         var missing_list = []
@@ -43,5 +65,13 @@ module.exports = {
             }
         }
         return responses.get_response_object(responses.CODE_SUCCESS, request_body, responses.MESSAGE_SUCCESS)
+    },
+    create_jwt_token: async (data) => {
+        /*
+            This function will create a new jwt token
+            parameters: data
+            return:
+        */
+        return jwt.sign(data);
     }
 }
