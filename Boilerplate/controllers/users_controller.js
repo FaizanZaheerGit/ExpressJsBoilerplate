@@ -109,6 +109,8 @@ module.exports = {
         delete token_data[constants.EMAIL_ADDRESS]
         delete token_data[constants.PASSWORD]
         token_data[constants.USER] = user;
+        const updated_tokens = await database_layer.db_update_multiple_records(TokenModel, { user: token_data[constants.USER] }, 
+            { is_expired: true, expiry_time: common_utils.get_current_epoch_time() })
         const user_data = JSON.stringify(user);
         let access_token = await common_utils.create_jwt_token(user_data)
         token_data[constants.ACCESS_TOKEN] = access_token
