@@ -15,5 +15,6 @@ module.exports = {
     ACCESS_TOKEN: "access_token",
     REFRESH_TOKEN: "refresh_token",
     IS_EXPIRED: "is_expired",
-    EXPIRY_TIME: "expiry_time"
+    EXPIRY_TIME: "expiry_time",
+    PURPOSE: "purpose"
 }

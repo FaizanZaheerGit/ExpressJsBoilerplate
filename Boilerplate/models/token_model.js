@@ -15,5 +15,5 @@ const TokenSchema = new mongoose.Schema({
     updated_at: {type: Number, default: common_utils.get_current_epoch_time()}
 });
 
-const TokenModel = mongoose.model("token", TokenSchema);
+const TokenModel = mongoose.model("access_token", TokenSchema);
 module.exports = TokenModel;
