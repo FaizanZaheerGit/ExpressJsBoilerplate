@@ -10,5 +10,8 @@ module.exports = {
     STATUS: "status",
     CREATED_AT: "created_at",
     UPDATED_AT: "updated_at",
-    USER: "user"
+    USER: "user",
+    CURRENT_USER: "current_user",
+    ACCESS_TOKEN: "access_token",
+    REFRESH_TOKEN: "refresh_token"
 }

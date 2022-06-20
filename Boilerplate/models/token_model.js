@@ -7,7 +7,8 @@ const Schema = mongoose.Schema;
 const TokenSchema = new mongoose.Schema({
     uid: {type: String, required: true, unique: true, default: uuidv4()},
     user: { type: Schema.Types.ObjectId, ref: 'users' },
-    token: {type: String, required: true},
+    access_token: {type: String, default: ""},
+    refresh_token:  {type: String, default: ""},
     purpose: {type: String, default: ""},
     expiry_time: {type: String, default: 0},
     is_expired: {type: Boolean, default: false},

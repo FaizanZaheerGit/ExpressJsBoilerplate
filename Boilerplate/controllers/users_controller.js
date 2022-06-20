@@ -5,7 +5,7 @@ const userUtils = require('../utils/user_utils');
 const constants = require('../utils/constants');
 const common_utils = require('../utils/common_utils');
 const UsersModel = require('../models/user_model');
-const TokenModel = require('../models/token_model')
+const TokenModel = require('../models/token_model');
 
 
 module.exports = {
@@ -17,7 +17,7 @@ module.exports = {
         */
         insert_data = req.body;
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
-        insert_data[constants.EMAIL_ADDRESS] = await insert_data.toLowerCase();
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].toLowerCase();
         let existing_user = await database_layer.db_read_single_record(UsersModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
         if(existing_user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
@@ -40,6 +40,9 @@ module.exports = {
             return:
         */
         const read_filter = req.query || {};
+        if (req[constants.CURRENT_USER]) {
+            read_filter[constants.EMAIL_ADDRESS] = req.current_user[constants.EMAIL_ADDRESS]
+        }
         let users = await database_layer.db_read_multiple_records(userModel, read_filter);
         users = await userUtils.filter_user_object(users);
         return res.status(responses.CODE_SUCCESS).send(
@@ -87,23 +90,33 @@ module.exports = {
     },
     loginController: async (req, res) => {
         /*
-            This function will validate andlogin a user
+            This function will validate and login a user
             parameters: request, response
             return:
         */
-        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
-        insert_data[constants.EMAIL_ADDRESS] = await insert_data.toLowerCase();
-        let user = await database_layer.db_read_single_record(UsersModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
+        let token_data = req.body
+        token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].trim();
+        token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].toLowerCase();
+        let user = await database_layer.db_read_single_record(UsersModel, {email_address: token_data[constants.EMAIL_ADDRESS]})
         if(!user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_UNPROCESSABLE_ENTITY, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD)
                 )
         }
-        let is_password = common_utils.compare_password(insert_data[constants.PASSWORD], user[constants.PASSWORD])
+        let is_password = common_utils.compare_password(token_data[constants.PASSWORD], user[constants.PASSWORD])
         if (!is_password) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_UNPROCESSABLE_ENTITY, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD)
             )
         }
+        delete token_data[constants.EMAIL_ADDRESS]
+        delete token_data[constants.PASSWORD]
+        token_data[constants.USER] = user;
+        const user_data = await userUtils.get_user_object(user);
+        let access_token = await common_utils.create_jwt_token(user_data)
+        token_data[constants.ACCESS_TOKEN] = access_token
+        let token = await database_layer.db_insert_single_record(TokenModel, token_data)
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
+            {access_token: token}, responses.MESSAGE_SUCCESS));
     }
 }

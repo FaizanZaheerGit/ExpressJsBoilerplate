@@ -3,6 +3,9 @@ const config = require('../config/config');
 const responses = require('./responses');
 const jwt = require('jsonwebtoken');
 
+require('dotenv').config()
+const { ACCESS_TOKEN_SECRET_KEY, REFRESH_TOKEN_SECRET_KEY } = process.env;
+
 module.exports = {
     get_current_epoch_time: () => {
         /*
@@ -72,6 +75,22 @@ module.exports = {
             parameters: data
             return:
         */
-        return jwt.sign(data);
+        return jwt.sign(data, ACCESS_TOKEN_SECRET_KEY);
+    },
+    verify_jwt_token: async (token) => {
+        /*
+            This function will verify a jwt token
+            parameters: token
+            return:
+        */
+        return jwt.verify(token, ACCESS_TOKEN_SECRET_KEY, (err, user) => {
+            if (err) {
+                console.log(err);
+                return {code: 401, user: null};
+            }
+            else {
+                return {code: 200, user: user};
+            }
+        });
     }
 }
