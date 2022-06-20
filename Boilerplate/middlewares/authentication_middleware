@@ -1,5 +1,7 @@
 const responses = require("../utils/responses");
 const common_utils = require("../utils/common_utils");
+const database_layer = require("../database/database_layer");
+const TokenModel = require("../models/token_model");
 
 async function authenticateToken(req, res, next) {
     /*
@@ -17,6 +19,13 @@ async function authenticateToken(req, res, next) {
     }
     let verified_token = await common_utils.verify_jwt_token(token);
     if (verified_token["code"] != 200){
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+            responses.CODE_UNAUTHORIZED_ACCESS, null, responses.MESSAGE_UNAUTHORIZED_ACCESS
+        ))
+    }
+    let valid_token = database_layer.db_read_single_record(TokenModel, { "access_token": token, 
+      "is_expired": true, "expiry_time": 0 })
+    if (!valid_token) {
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
             responses.CODE_UNAUTHORIZED_ACCESS, null, responses.MESSAGE_UNAUTHORIZED_ACCESS
         ))

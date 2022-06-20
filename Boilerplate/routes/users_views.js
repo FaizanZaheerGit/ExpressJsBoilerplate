@@ -54,4 +54,9 @@ router.post('/login', async (req, res) => {
     return usersController.loginController(req, res);
 })
 
+router.get('/logout', authentication_middleware, async(req, res) => {
+    return usersController.logoutController(req, res);
+})
+
+
 module.exports = router;

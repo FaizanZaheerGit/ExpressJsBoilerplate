@@ -13,5 +13,7 @@ module.exports = {
     USER: "user",
     CURRENT_USER: "current_user",
     ACCESS_TOKEN: "access_token",
-    REFRESH_TOKEN: "refresh_token"
+    REFRESH_TOKEN: "refresh_token",
+    IS_EXPIRED: "is_expired",
+    EXPIRY_TIME: "expiry_time"
 }

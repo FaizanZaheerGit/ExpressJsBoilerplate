@@ -4,7 +4,7 @@ const responses = require('./responses');
 const jwt = require('jsonwebtoken');
 
 require('dotenv').config()
-const { ACCESS_TOKEN_SECRET_KEY, REFRESH_TOKEN_SECRET_KEY } = process.env;
+const { ACCESS_TOKEN_SECRET_KEY } = process.env;
 
 module.exports = {
     get_current_epoch_time: () => {

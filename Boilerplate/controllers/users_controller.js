@@ -115,5 +115,13 @@ module.exports = {
         let token = await database_layer.db_insert_single_record(TokenModel, token_data)
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
             {access_token: token[constants.ACCESS_TOKEN]}, responses.MESSAGE_SUCCESS));
+    },
+    logoutController: async (req, res) => {
+        const auth_header = req.headers['authorization'];
+        const token = auth_header && auth_header.split(' ')[1];
+        const updated_token = await database_layer.db_update_single_record(TokenModel, { access_token: token }, 
+            { is_expired: true, expiry_time: common_utils.get_current_epoch_time() })
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS, null, 
+            responses.MESSAGE_SUCCESS));
     }
 }
