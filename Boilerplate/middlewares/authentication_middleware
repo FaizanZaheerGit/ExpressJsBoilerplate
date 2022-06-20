@@ -9,7 +9,6 @@ async function authenticateToken(req, res, next) {
     */
     const auth_header = req.headers['authorization'];
     const token = auth_header && auth_header.split(' ')[1];
-    console.log('Token: ' + token + "\n");
     if (token == null) {
         console.log('Token missing from headers')
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(

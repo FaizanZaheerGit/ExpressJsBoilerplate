@@ -40,9 +40,6 @@ module.exports = {
             return:
         */
         const read_filter = req.query || {};
-        if (req[constants.CURRENT_USER]) {
-            read_filter[constants.EMAIL_ADDRESS] = req.current_user[constants.EMAIL_ADDRESS]
-        }
         let users = await database_layer.db_read_multiple_records(userModel, read_filter);
         users = await userUtils.filter_user_object(users);
         return res.status(responses.CODE_SUCCESS).send(
@@ -112,11 +109,11 @@ module.exports = {
         delete token_data[constants.EMAIL_ADDRESS]
         delete token_data[constants.PASSWORD]
         token_data[constants.USER] = user;
-        const user_data = await userUtils.get_user_object(user);
+        const user_data = JSON.stringify(user);
         let access_token = await common_utils.create_jwt_token(user_data)
         token_data[constants.ACCESS_TOKEN] = access_token
         let token = await database_layer.db_insert_single_record(TokenModel, token_data)
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
-            {access_token: token}, responses.MESSAGE_SUCCESS));
+            {access_token: token[constants.ACCESS_TOKEN]}, responses.MESSAGE_SUCCESS));
     }
 }
