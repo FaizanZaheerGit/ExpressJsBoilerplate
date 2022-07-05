@@ -128,10 +128,11 @@ module.exports = {
         delete token_data[constants.PASSWORD]
         token_data[constants.USER] = user;
         const updated_tokens = await database_layer.db_update_multiple_records(TokenModel, { user: token_data[constants.USER] }, 
-            { is_expired: true, expiry_time: common_utils.get_current_epoch_time() })
+            { is_expired: true, expiry_time: common_utils.get_current_epoch_time(), purpose: "session_management" })
         const user_data = JSON.stringify(user);
         let access_token = await common_utils.create_jwt_token(user_data)
         token_data[constants.ACCESS_TOKEN] = access_token
+        token_data[constants.PURPOSE] = "session_management"
         let token = await database_layer.db_insert_single_record(TokenModel, token_data)
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
             {access_token: token[constants.ACCESS_TOKEN]}, responses.MESSAGE_SUCCESS));
