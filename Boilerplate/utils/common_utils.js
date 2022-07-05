@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const config = require('../config/config');
 const responses = require('./responses');
 const jwt = require('jsonwebtoken');
+const Joi = require('joi');
 
 require('dotenv').config()
 const { ACCESS_TOKEN_SECRET_KEY } = process.env;
@@ -92,5 +93,17 @@ module.exports = {
                 return {code: 200, user: user};
             }
         });
+    },
+    validate_data: async () => {
+        const schema = Joi.object({
+            password: Joi.string().regex(RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,50}$')),
+            email_address: Joi.string().email().trim(),
+            access_token: Joi.string(),
+            name: Joi.object(),
+            gender: Joi.object(),
+            id: Joi.string(),
+            uid: Joi.string()
+        });
+        return schema.validate(body);
     }
 }

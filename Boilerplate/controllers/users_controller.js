@@ -18,6 +18,12 @@ module.exports = {
         insert_data = req.body;
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].toLowerCase();
+        const { error } = await common_utils.validate_data(insert_data);
+        if (error) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.message
+            ))
+        }
         let existing_user = await database_layer.db_read_single_record(UsersModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
         if(existing_user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
@@ -61,6 +67,12 @@ module.exports = {
         }
         const update_filter = req.body;
         delete update_filter.uid;
+        const { error } = await common_utils.validate_data(update_filter);
+        if (error) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.message
+            ))
+        }
         let update_user = await database_layer.db_update_single_record(userModel, read_filter, update_filter);
         update_user = await database_layer.db_read_single_record(userModel, read_filter);
         return res.status(200).send(responses.get_response_object(responses.CODE_SUCCESS,
@@ -91,7 +103,13 @@ module.exports = {
             parameters: request, response
             return:
         */
-        let token_data = req.body
+        let token_data = req.body;
+        const { error } = await common_utils.validate_data(token_data);
+        if (error) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.message
+            ))
+        }
         token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].trim();
         token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].toLowerCase();
         let user = await database_layer.db_read_single_record(UsersModel, {email_address: token_data[constants.EMAIL_ADDRESS]})

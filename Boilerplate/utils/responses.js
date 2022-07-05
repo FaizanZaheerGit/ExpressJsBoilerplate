@@ -17,6 +17,7 @@ module.exports = {
     CODE_GENERAL_ERROR: 452,
     CODE_MISSING_PARAMETERS: 4001,
     CODE_ALREADY_EXISTS: 4002,
+    CODE_VALIDATION_FAILED: 4003,
     MESSAGE_SUCCESS: "Successful Response",
     MESSAGE_UNAUTHORIZED_ACCESS: "Unauthorized Access",
     MESSAGE_CREATED: (collection_name) => { return `${collection_name} created successfully` },
@@ -25,5 +26,6 @@ module.exports = {
     MESSAGE_ALREADY_EXISTS: (params) => { return `${params[0]} with this ${params[1]} already exists` },
     MESSAGE_GENERAL_ERROR: "Something Went Wrong",
     MESSAGE_SERVER_ERROR: "Internal Server Error",
-    MESSAGE_MISSING_PARAMTERS: (params) => { return `Some Paramters Are Missing: ${params}` }
+    MESSAGE_MISSING_PARAMTERS: (params) => { return `Some Paramters Are Missing: ${params}` },
+    MESSAGE_VALIDATION_FAILED: "Validatoin failed "
 };
