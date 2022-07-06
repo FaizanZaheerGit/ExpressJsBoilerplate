@@ -8,8 +8,6 @@ module.exports = {
             full_name: (user[constants.NAME][constants.FIRST] + " " 
             + user[constants.NAME][constants.MIDDLE] + " " + user[constants.NAME][constants.LAST]),
             email_address: user[constants.EMAIL_ADDRESS],
-            password: user[constants.PASSWORD],
-            password_salt: user[constants.PASSWORD_SALT],
             status: user[constants.STATUS],
             created_at: user[constants.CREATED_AT],
             updated_at: user[constants.UPDATED_AT]
