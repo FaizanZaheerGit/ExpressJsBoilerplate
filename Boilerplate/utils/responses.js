@@ -27,5 +27,5 @@ module.exports = {
     MESSAGE_GENERAL_ERROR: "Something Went Wrong",
     MESSAGE_SERVER_ERROR: "Internal Server Error",
     MESSAGE_MISSING_PARAMTERS: (params) => { return `Some Paramters Are Missing: ${params}` },
-    MESSAGE_VALIDATION_FAILED: "Validatoin failed "
+    MESSAGE_VALIDATION_FAILED: "Validation failed "
 };

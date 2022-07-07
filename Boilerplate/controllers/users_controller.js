@@ -16,14 +16,14 @@ module.exports = {
             return:
         */
         insert_data = req.body;
-        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
-        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].toLowerCase();
         const { error } = await common_utils.validate_data(insert_data);
         if (error) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.message
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + " key: " + error.details[0].context?.key
             ))
         }
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].toLowerCase();
         let existing_user = await database_layer.db_read_single_record(UsersModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
         if(existing_user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
@@ -107,7 +107,7 @@ module.exports = {
         const { error } = await common_utils.validate_data(token_data);
         if (error) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.message
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + " key: " + error.details[0].context?.key
             ))
         }
         token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].trim();

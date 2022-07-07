@@ -94,7 +94,7 @@ module.exports = {
             }
         });
     },
-    validate_data: async () => {
+    validate_data: async (body) => {
         const schema = Joi.object({
             password: Joi.string().regex(RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,50}$')),
             email_address: Joi.string().email().trim(),
