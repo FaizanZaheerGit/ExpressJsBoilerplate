@@ -46,12 +46,6 @@ module.exports = {
             return:
         */
         const read_filter = req.query || {};
-        read_filter.email_address = parseInt(read_filter.email_address);
-        if ( read_validation.error ) {
-            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + read_validation.error.details[0].context?.key
-            ))
-        }
         let users = await database_layer.db_read_multiple_records(userModel, read_filter);
         users = await userUtils.filter_user_object(users);
         return res.status(responses.CODE_SUCCESS).send(
