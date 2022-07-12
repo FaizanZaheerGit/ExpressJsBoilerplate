@@ -1,8 +1,6 @@
 const winston = require('winston');
 
-
 const log_format = winston.format.printf( ({level, message, timestamp, stack}) => {
-    console.log('M: ' + message + '\nS: ' + stack)
     return `Time: ${timestamp}, level: ${level}, message: ${stack || message}`;
 });
 
