@@ -2,7 +2,6 @@ const cors = require('cors');
 const bodyParser = require("body-parser");
 const express = require('express');
 const responses = require('./utils/responses');
-const error_middleware = require('./middlewares/error_middleware');
 
 const app = express();
 app.use(cors())
@@ -26,7 +25,6 @@ app.get("/", (req, res) => {
 });
 
 app.use('/api/users', require('./routes/users_views'))
-app.use(error_middleware)
 
 // SETUP LISTEN FOR APP ON PORT
 app.listen(port, () => {
