@@ -46,6 +46,12 @@ module.exports = {
             return:
         */
         const read_filter = req.query || {};
+        read_filter.email_address = parseInt(read_filter.email_address);
+        if ( read_validation.error ) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + read_validation.error.details[0].context?.key
+            ))
+        }
         let users = await database_layer.db_read_multiple_records(userModel, read_filter);
         users = await userUtils.filter_user_object(users);
         return res.status(responses.CODE_SUCCESS).send(
@@ -70,7 +76,7 @@ module.exports = {
         const { error } = await common_utils.validate_data(update_filter);
         if (error) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.message
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
         }
         let update_user = await database_layer.db_update_single_record(userModel, read_filter, update_filter);
