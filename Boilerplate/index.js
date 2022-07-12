@@ -16,12 +16,15 @@ const { PORT } = process.env;
 require('./database/database_intialization');
 
 const port = PORT || 5000;
+const logger = require('./logger/logger');
 
 
 // ROUTES
 app.get("/", (req, res) => {
     res.status(200).send(responses.get_response_object(response_code=responses.CODE_SUCCESS,
         response_data=null, response_message="Server is Up And Running"))
+    logger.info('200: Server is Up and Running')
+    return;
 });
 
 app.use('/api/users', require('./routes/users_views'))

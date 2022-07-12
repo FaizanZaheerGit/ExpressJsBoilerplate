@@ -2,6 +2,7 @@ const responses = require("../utils/responses");
 const common_utils = require("../utils/common_utils");
 const database_layer = require("../database/database_layer");
 const TokenModel = require("../models/token_model");
+const logger = require('../logger/logger');
 
 async function authenticateToken(req, res, next) {
     /*
@@ -13,6 +14,7 @@ async function authenticateToken(req, res, next) {
     const token = auth_header && auth_header.split(' ')[1];
     if (token == null) {
         console.log('Token missing from headers')
+        logger.error(`Token missing from headers`);
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
             responses.CODE_UNAUTHORIZED_ACCESS, null, responses.MESSAGE_UNAUTHORIZED_ACCESS
         ))

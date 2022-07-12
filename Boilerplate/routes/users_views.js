@@ -3,6 +3,7 @@ const usersController = require('../controllers/users_controller');
 const constants = require('../utils/constants');
 const common_utils = require('../utils/common_utils');
 const authentication_middleware = require('../middlewares/authentication_middleware');
+const logger = require('../logger/logger');
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ router.post('/create', async (req, res) => {
     let optional_list = [];
     let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
     if (response["response_code"] != 200) {
+        logger.error(`Missing Paramters: ${JSON.stringify(response["response_message"])}`)
         return res.status(200).send(response)
     }
     req.body = response["response_data"];
@@ -33,6 +35,7 @@ router.put('/update', authentication_middleware, async (req, res) => {
     let optional_list = [constants.NAME, constants.STATUS];
     let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
     if (response["response_code"] != 200) {
+        logger.error(`Missing Paramters: ${JSON.stringify(response["response_message"])}`)
         return res.status(200).send(response)
     }
     req.body = response["response_data"];
@@ -48,6 +51,7 @@ router.post('/login', async (req, res) => {
     let optional_list = [];
     let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
     if (response["response_code"] != 200) {
+        logger.error(`Missing Paramters: ${JSON.stringify(response["response_message"])}`)
         return res.status(200).send(response)
     }
     req.body = response["response_data"];
