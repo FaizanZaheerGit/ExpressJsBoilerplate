@@ -6,6 +6,7 @@ const constants = require('../utils/constants');
 const common_utils = require('../utils/common_utils');
 const UsersModel = require('../models/user_model');
 const TokenModel = require('../models/token_model');
+const logger = require('../logger/logger');
 
 
 module.exports = {
@@ -15,7 +16,8 @@ module.exports = {
             parameters: request, response
             return:
         */
-        insert_data = req.body;
+        try {
+        let insert_data = req.body;
         const { error } = await common_utils.validate_data(insert_data);
         if (error) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
@@ -33,10 +35,19 @@ module.exports = {
         password_array = await common_utils.encrypt_password(insert_data[constants.PASSWORD]);
         insert_data[constants.PASSWORD] = password_array[0];
         insert_data[constants.PASSWORD_SALT] = password_array[1];
-        let new_user = await database_layer.db_insert_single_record(collection=userModel, insert_data=req.body);
+        let new_user = await database_layer.db_insert_single_record(userModel, insert_data);
         var new_user_obj = userUtils.get_user_object(new_user);
         return res.status(responses.CODE_CREATED).send(
             responses.get_response_object(responses.CODE_CREATED, {user: new_user_obj}, responses.MESSAGE_CREATED(constants.USER)));
+        }
+        catch (err) {
+            logger.error("ERROR FROM CREATE CONTROLLER: " + err)
+            return res.status(200).send(
+                responses.get_response_object(
+                    responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
+                )
+            )
+        }
     },
     readController: async(req, res) => {
         /*
@@ -45,11 +56,21 @@ module.exports = {
             parameters: request, response
             return:
         */
+        try {
         const read_filter = req.query || {};
         let users = await database_layer.db_read_multiple_records(userModel, read_filter);
         users = await userUtils.filter_user_object(users);
         return res.status(responses.CODE_SUCCESS).send(
             responses.get_response_object(responses.CODE_SUCCESS, {users: users}, responses.MESSAGE_SUCCESS));
+        }
+        catch (err) {
+            logger.error("ERROR FROM READ CONTROLLER: " + err)
+            return res.status(200).send(
+                responses.get_response_object(
+                    responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
+                )
+            )
+        }
     },
     updateController: async (req, res) => {
         /*
@@ -57,6 +78,7 @@ module.exports = {
             parameters: request, response
             return:
         */
+        try {
         const read_filter = { uid: req.body.uid };
         let user = await database_layer.db_read_single_record(userModel, read_filter);
         if (!user) {
@@ -77,6 +99,15 @@ module.exports = {
         update_user = await database_layer.db_read_single_record(userModel, read_filter);
         return res.status(200).send(responses.get_response_object(responses.CODE_SUCCESS,
             {user: userUtils.get_user_object(update_user)}, responses.MESSAGE_SUCCESS));
+        }
+        catch (err) {
+            logger.error("ERROR FROM UPDATE CONTROLLER: " + err)
+            return res.status(200).send(
+                responses.get_response_object(
+                    responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
+                )
+            )
+        }
     },
     deleteController: async (req, res) => {
         /*
@@ -84,6 +115,7 @@ module.exports = {
             parameters: request, response
             return:
         */
+        try {
         const delete_filter = { uid: req.params.id };
         let user = await database_layer.db_read_single_record(userModel, delete_filter);
         if (!user) {
@@ -96,6 +128,15 @@ module.exports = {
         let users = await database_layer.db_read_multiple_records(userModel, {});
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
             {users: userUtils.filter_user_object(users)}, responses.MESSAGE_SUCCESS));
+        }
+        catch (err) {
+            logger.error("ERROR FROM DELETE CONTROLLER: " + err)
+            return res.status(200).send(
+                responses.get_response_object(
+                    responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
+                )
+            )
+        }
     },
     loginController: async (req, res) => {
         /*
@@ -103,6 +144,7 @@ module.exports = {
             parameters: request, response
             return:
         */
+        try {
         let token_data = req.body;
         const { error } = await common_utils.validate_data(token_data);
         if (error) {
@@ -136,13 +178,32 @@ module.exports = {
         let token = await database_layer.db_insert_single_record(TokenModel, token_data)
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
             {access_token: token[constants.ACCESS_TOKEN]}, responses.MESSAGE_SUCCESS));
+        }
+        catch (err) {
+            logger.error("ERROR FROM LOGIN CONTROLLER: " + err)
+            return res.status(200).send(
+                responses.get_response_object(
+                    responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
+                )
+            )
+        }
     },
     logoutController: async (req, res) => {
+        try {
         const auth_header = req.headers['authorization'];
         const token = auth_header && auth_header.split(' ')[1];
         const updated_token = await database_layer.db_update_single_record(TokenModel, { access_token: token }, 
             { is_expired: true, expiry_time: common_utils.get_current_epoch_time() })
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS, null, 
             responses.MESSAGE_SUCCESS));
+        }
+        catch (err) {
+            logger.error("ERROR FROM LKOGUT CONTROLLER: " + err)
+            return res.status(200).send(
+                responses.get_response_object(
+                    responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
+                )
+            )
+        }
     }
 }
