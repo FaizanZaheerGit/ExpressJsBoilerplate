@@ -18,6 +18,7 @@ module.exports = {
     CODE_MISSING_PARAMETERS: 4001,
     CODE_ALREADY_EXISTS: 4002,
     CODE_VALIDATION_FAILED: 4003,
+    CODe_INVALID_CALL: 4004,
     MESSAGE_SUCCESS: "SUCCESS",
     MESSAGE_UNAUTHORIZED_ACCESS: "Unauthorized Access",
     MESSAGE_CREATED: (collection_name) => { return `${collection_name} created successfully` },
@@ -27,5 +28,6 @@ module.exports = {
     MESSAGE_GENERAL_ERROR: "Something Went Wrong",
     MESSAGE_SERVER_ERROR: "Internal Server Error",
     MESSAGE_MISSING_PARAMTERS: (params) => { return `Some Paramters Are Missing: ${params}` },
-    MESSAGE_VALIDATION_FAILED: "Validation failed "
+    MESSAGE_VALIDATION_FAILED: "Validation failed ",
+    MESSAGE_INVALID_CALL: "Invalid Call"
 };
