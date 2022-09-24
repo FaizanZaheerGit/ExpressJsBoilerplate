@@ -18,7 +18,7 @@ module.exports = {
     CODE_MISSING_PARAMETERS: 4001,
     CODE_ALREADY_EXISTS: 4002,
     CODE_VALIDATION_FAILED: 4003,
-    MESSAGE_SUCCESS: "Successful Response",
+    MESSAGE_SUCCESS: "SUCCESS",
     MESSAGE_UNAUTHORIZED_ACCESS: "Unauthorized Access",
     MESSAGE_CREATED: (collection_name) => { return `${collection_name} created successfully` },
     MESSAGE_NOT_FOUND: (params) => { return `${params[0]} with this ${params[1]} is not found` },

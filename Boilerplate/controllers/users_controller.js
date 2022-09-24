@@ -41,7 +41,7 @@ module.exports = {
             responses.get_response_object(responses.CODE_CREATED, {user: new_user_obj}, responses.MESSAGE_CREATED(constants.USER)));
         }
         catch (err) {
-            logger.error("ERROR FROM CREATE CONTROLLER: " + err)
+            logger.error("ERROR FROM CREATE CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body))
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
@@ -64,7 +64,7 @@ module.exports = {
             responses.get_response_object(responses.CODE_SUCCESS, {users: users}, responses.MESSAGE_SUCCESS));
         }
         catch (err) {
-            logger.error("ERROR FROM READ CONTROLLER: " + err)
+            logger.error("ERROR FROM READ CONTROLLER: " + err + " QUERY DATA: " + JSON.stringify(req.query))
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
@@ -101,7 +101,7 @@ module.exports = {
             {user: userUtils.get_user_object(update_user)}, responses.MESSAGE_SUCCESS));
         }
         catch (err) {
-            logger.error("ERROR FROM UPDATE CONTROLLER: " + err)
+            logger.error("ERROR FROM UPDATE CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body))
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
@@ -120,7 +120,7 @@ module.exports = {
         let user = await database_layer.db_read_single_record(userModel, delete_filter);
         if (!user) {
             let response_obj = responses.get_response_object(responses.CODE_UNPROCESSABLE_ENTITY,
-                {}, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID]))
+                null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID]))
             delete response_obj.response_data;
             return res.status(responses.CODE_SUCCESS).send(response_obj);
         }
@@ -130,7 +130,7 @@ module.exports = {
             {users: userUtils.filter_user_object(users)}, responses.MESSAGE_SUCCESS));
         }
         catch (err) {
-            logger.error("ERROR FROM DELETE CONTROLLER: " + err)
+            logger.error("ERROR FROM DELETE CONTROLLER: " + err + " PARAM DATA: " + req.params)
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
@@ -180,7 +180,7 @@ module.exports = {
             {access_token: token[constants.ACCESS_TOKEN]}, responses.MESSAGE_SUCCESS));
         }
         catch (err) {
-            logger.error("ERROR FROM LOGIN CONTROLLER: " + err)
+            logger.error("ERROR FROM LOGIN CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body))
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
