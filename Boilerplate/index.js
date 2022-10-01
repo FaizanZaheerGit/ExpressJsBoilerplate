@@ -52,7 +52,7 @@ app.get("/api/logs/:type", authentication_middleware, (req, res) => {
                 ))
             }
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                responses.CODE_SUCCESS, { data: data }, responses.MESSAGE_SUCCESS
+                responses.CODE_SUCCESS, { data: data.toString() }, responses.MESSAGE_SUCCESS
             ))
             })
         }
@@ -65,7 +65,7 @@ app.get("/api/logs/:type", authentication_middleware, (req, res) => {
                 ))
             }
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                responses.CODE_SUCCESS, { data: data }, responses.MESSAGE_SUCCESS
+                responses.CODE_SUCCESS, { data: data.toString() }, responses.MESSAGE_SUCCESS
             ))
             })
         }
