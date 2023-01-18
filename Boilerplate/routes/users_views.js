@@ -62,5 +62,15 @@ router.get('/logout', authentication_middleware, async(req, res) => {
     return usersController.logoutController(req, res);
 })
 
+router.post('/social/login/:channel', async (req, res) => {
+    let required_list = [constants.OAUTH_CODE];
+    let optional_list = [constants.NAME];
+    let response = await common_utils.validate_request_body(req.body, required_list, optional_list);
+    if (response.response_code != 200) {
+      return res.status(200).send(response);
+    };
+    req.body = response.response_data;
+    return usersController.socialLoginController(req, res);
+  })
 
 module.exports = router;

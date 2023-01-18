@@ -40,7 +40,7 @@ app.get("/api/logs/:type", authentication_middleware, (req, res) => {
     try {
     if (req.params.type.toLowerCase() != "error" && req.params.type.toLowerCase() != "combined") {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                responses.CODe_INVALID_CALL, null, responses.MESSAGE_INVALID_CALL
+                responses.CODE_INVALID_CALL, null, responses.MESSAGE_INVALID_CALL
             ))
         }
     else if ( req.params.type.toLowerCase() == "error") {

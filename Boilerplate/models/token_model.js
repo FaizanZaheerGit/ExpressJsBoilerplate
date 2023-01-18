@@ -7,7 +7,7 @@ const Schema = mongoose.Schema;
 const TokenSchema = new mongoose.Schema({
     uid: {type: String, required: true, unique: true, default: uuidv4()},
     user: { type: Schema.Types.ObjectId, ref: 'users' },
-    access_token: {type: String, default: ""},
+    token: {type: String, default: ""},
     purpose: {type: String, default: ""},
     expiry_time: {type: Number, default: 0},
     is_expired: {type: Boolean, default: false},
@@ -15,5 +15,5 @@ const TokenSchema = new mongoose.Schema({
     updated_at: {type: Number, default: common_utils.get_current_epoch_time()}
 });
 
-const TokenModel = mongoose.model("access_token", TokenSchema);
+const TokenModel = mongoose.model("token", TokenSchema);
 module.exports = TokenModel;

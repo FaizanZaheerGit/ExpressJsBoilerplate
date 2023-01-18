@@ -1,12 +1,15 @@
 module.exports = {
+    ID: "id",
     UID: "uid",
     NAME: "name",
     FIRST: "first",
     MIDDLE: "middle",
     LAST: "last",
+    EMAIL: "email",
     EMAIL_ADDRESS: "email_address",
     PASSWORD: "password",
     PASSWORD_SALT: "password_salt",
+    OAUTH_CODE: "oauth_code",
     STATUS: "status",
     CREATED_AT: "created_at",
     UPDATED_AT: "updated_at",
@@ -14,7 +17,12 @@ module.exports = {
     CURRENT_USER: "current_user",
     ACCESS_TOKEN: "access_token",
     REFRESH_TOKEN: "refresh_token",
+    TOKEN: "token",
+    SESSION_MANAGEMENT: "session_management",
     IS_EXPIRED: "is_expired",
     EXPIRY_TIME: "expiry_time",
-    PURPOSE: "purpose"
+    PURPOSE: "purpose",
+    GOOGLE: "google",
+    FACEBOOK: "facebook",
+    APPLE: "apple"
 }
