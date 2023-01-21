@@ -3,6 +3,7 @@ const config = require('../config/config');
 const responses = require('./responses');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
+const nodemailer = require('nodemailer');
 
 require('dotenv').config()
 const { ACCESS_TOKEN_SECRET_KEY } = process.env;
@@ -98,12 +99,54 @@ module.exports = {
         const schema = Joi.object({
             password: Joi.string().regex(RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,50}$')),
             email_address: Joi.string().email().trim(),
-            access_token: Joi.string(),
-            name: Joi.object(),
-            gender: Joi.object(),
+            image: Joi.string().uri().allow([" ", ' ']),
+            token: Joi.string(),
+            name: Joi.object({
+                first: Joi.string(),
+                middle: Joi.string(),
+                last: Joi.string()
+            }),
+            gender: Joi.object({
+                id: Joi.number(),
+                name: Joi.string()
+            }),
             id: Joi.string(),
             uid: Joi.string()
         });
         return schema.validate(body);
+    },
+    send_mail_to_user: async (from, to, subject, body) => {
+        /* This function will send otp code to the relevant customer's email-address
+        parameters:from, to, subject, body
+            return:
+            */
+        try {
+            var transporter = nodemailer.createTransport(
+                {
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,
+                    require: true,
+                    auth: {
+                        user: process.env.FROM,
+                        pass: process.env.PASS
+                    }
+                }
+            );
+            var mailoptions = {
+                from: "SENDER NAME " + from,
+                to: to,
+                subject: subject,
+                html: body
+            };
+            transporter.sendMail(mailoptions, function (error) {
+                if (error) { console.log(error); } 
+                else { console.log('Email has been sent to ', mailoptions.to); }
+            })
+        }
+        catch (err) {
+            logger.error('COULD NOT SEND EMAIL: ' + err)
+        }
+        return;
     }
 }

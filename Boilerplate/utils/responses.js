@@ -29,5 +29,9 @@ module.exports = {
     MESSAGE_SERVER_ERROR: "Internal Server Error",
     MESSAGE_MISSING_PARAMTERS: (params) => { return `Some Paramters Are Missing: ${params}` },
     MESSAGE_VALIDATION_FAILED: "Validation failed ",
-    MESSAGE_INVALID_CALL: "Invalid Call"
+    MESSAGE_INVALID_CALL: "Invalid Call",
+    MESSAGE_INVALID_TOKEN: "Invalid Token",
+    MESSAGE_SAME_PASSWORD: "You are using an older password",
+    MESSAGE_PASSWORD_UPDATED_SUCCESSFULLY: "Password has been updated successfully",
+    MESSAGE_MAIL_SENT_SUCCESSFULLY: "Mail has been sent successfully"
 };

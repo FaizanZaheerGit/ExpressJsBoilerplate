@@ -5,6 +5,7 @@ const fs = require('fs');
 const authentication_middleware = require('./middlewares/authentication_middleware');
 const responses = require('./utils/responses');
 const static_data = require('./config/static_data');
+const firebase_utils = require('./utils/firebase_utils');
 
 const app = express();
 app.use(cors())
@@ -20,7 +21,7 @@ require('./database/database_intialization');
 
 const port = PORT || 5000;
 const logger = require('./logger/logger');
-
+const firebase_app = firebase_utils.FIREBASE_APP;
 
 // ROUTES
 app.get("/", (req, res) => {

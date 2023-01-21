@@ -9,8 +9,10 @@ const TokenModel = require('../models/token_model');
 const logger = require('../logger/logger');
 const config = require('../config/config');
 const static_data = require('../config/static_data');
+const { v4 : uuidv4 } = require('uuid');
 const axios = require('axios').default;
 const jwt = require('jsonwebtoken');
+const firebase_utils = require('../utils/firebase_utils');
 
 
 module.exports = {
@@ -22,11 +24,17 @@ module.exports = {
         */
         try {
         let insert_data = req.body;
+        if (insert_data.image == null || insert_data.image == '') {
+          insert_data[constants.IMAGE] = ' ';
+        }
         const { error } = await common_utils.validate_data(insert_data);
         if (error) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + " key: " + error.details[0].context?.key
             ))
+        }
+        if (insert_data.image == ' ') {
+          insert_data[constants.IMAGE] = ""
         }
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].toLowerCase();
@@ -92,11 +100,17 @@ module.exports = {
         }
         const update_filter = req.body;
         delete update_filter.uid;
+        if (update_filter.image == null || update_filter.image == '') {
+          update_filter[constants.IMAGE] = ' ';
+        }
         const { error } = await common_utils.validate_data(update_filter);
         if (error) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
+        }
+        if (update_filter.image == ' ') {
+          update_filter[constants.IMAGE] = ""
         }
         let update_user = await database_layer.db_update_single_record(userModel, read_filter, update_filter);
         update_user = await database_layer.db_read_single_record(userModel, read_filter);
@@ -200,13 +214,156 @@ module.exports = {
             responses.MESSAGE_SUCCESS));
         }
         catch (err) {
-            logger.error("ERROR FROM LKOGUT CONTROLLER: " + err)
+            logger.error("ERROR FROM LOGOUT CONTROLLER: " + err)
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
                 )
             )
         }
+    },
+    forget_password_controller: async (req, res) => {
+      /*
+              This function will send an email along with the access token to user to reset there password
+              parameters: request, response
+             return:
+          */
+      try {
+        const read_filter = { email_address: req.body.email_address };
+        let user = await database_layer.db_read_single_record(UsersModel, read_filter);
+        if (!user) {
+          return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+            responses.CODE_INVALID_CALL, null,
+            responses.MESSAGE_NOT_FOUND([constants.USER, constants.EMAIL_ADDRESS])
+          ));
+        }
+        await database_layer.db_update_multiple_records(TokenModel, { user: user, purpose: "Reset Password" }, { is_expired: true, expiry_time: common_utils.get_current_epoch_time() });
+        let insert_token_data = {};
+        let token = uuidv4();
+        let url = "https://www.example.com/" + user.uid + "/" + token;
+        insert_token_data[constants.USER] = user;
+        insert_token_data[constants.PURPOSE] = "Reset Password";
+        insert_token_data[constants.TOKEN] = token;
+        let new_token = await database_layer.db_insert_single_record(TokenModel, insert_token_data);
+        let send_mail = await common_utils.send_mail_to_user(
+          process.env.FROM,
+          user.email_address,
+          "RESET PASSWORD",
+          "<p>Hi " + user.name + ", Click the link below to reset your password:\n" + url );
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+          responses.CODE_SUCCESS, null, responses.MESSAGE_MAIL_SENT_SUCCESSFULLY ));
+      } catch (e) {
+        console.log("Error from Forgot Password Controller: " + e + " DATA: " + JSON.stringify(req.body));
+        logger.error("Error from Forgot Password Controller: " + e + " DATA: " + JSON.stringify(req.body));
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+          responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR));
+      }
+    },
+    reset_passsword_controller: async (req, res) => {
+      /* This function will reset the password and expire old access token
+              parameters: request, response
+             return:
+          */
+  
+      try {
+        let user = await database_layer.db_read_single_record(UsersModel, { uid: req.body.uid });
+        if (!user) {
+          return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+            responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID])
+            ));
+        }
+        let token = await database_layer.db_read_single_record(TokenModel, { user: user, token: req.body.token, purpose: "Reset Password", is_expired: false });
+        if (!token) {
+          return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+            responses.CODE_INVALID_CALL, null, responses.MESSAGE_INVALID_TOKEN ));
+        }
+        const password = req.body.new_password;
+        const password_array = await common_utils.encrypt_password(password);
+        let new_password = password_array[0];
+        let password_salt = password_array[1];
+        let confirm_password = await common_utils.compare_password( req.body.new_password, user[constants.PASSWORD] );
+        if (confirm_password) {
+          return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+            responses.CODE_INVALID_CALL, null, responses.MESSAGE_SAME_PASSWORD ));
+        }
+        user = await database_layer.db_update_single_record( UsersModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt });
+        token = await database_layer.db_update_multiple_records( TokenModel, { token: req.body.token }, { is_expired: true, expiry_time: common_utils.get_current_epoch_time() } );
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+          responses.CODE_SUCCESS, null, responses.MESSAGE_PASSWORD_UPDATED_SUCCESSFULLY ));
+      } catch (e) {
+        console.log("Error from Reset Password Controller: " + e + " DATA: " + JSON.stringify(req.body));
+        logger.error("Error from Reset Password Controller: " + e + " DATA: " + JSON.stringify(req.body));
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+          responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR ));
+      }
+    },
+    change_passsword_controller: async (req, res) => {
+      /*
+              This function will change the password of the logged in user
+              parameters: request, response
+              return:
+          */
+      try {
+        let user = await database_layer.db_read_single_record(UsersModel, { uid: req.body.uid });
+        if (!user) {
+          return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+            responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID])
+          ));
+        }
+        if (req["current_user"] != user._id) {
+          return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+            responses.CODE_UNAUTHORIZED_ACCESS, null, responses.MESSAGE_UNAUTHORIZED_ACCESS ));
+        }
+        let confirm_password = await common_utils.compare_password( req.body.old_password, user[constants.PASSWORD] );
+        if (!confirm_password) {
+          return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+            responses.CODE_INVALID_CALL, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD ));
+        }
+        const password = req.body.new_password;
+        const password_array = await common_utils.encrypt_password(password);
+        let new_password = password_array[0];
+        let password_salt = password_array[1];
+        if (req.body.old_password == password) {
+          return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+            responses.CODE_SUCCESS, null, responses.MESSAGE_SAME_PASSWORD ));
+        }
+        user = await database_layer.db_update_single_record( UsersModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt } );
+        return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+          responses.CODE_SUCCESS, null, responses.MESSAGE_PASSWORD_UPDATED_SUCCESSFULLY ));
+      } catch (e) {
+        console.log("Error from Change Password Controller: " + e + " DATA: " + JSON.stringify(req.body));
+        logger.error("Error from Change Password Controller: " + e + " DATA: " + JSON.stringify(req.body));
+        return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+          responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR ));
+      }
+    },
+    uploadImageController: async (req, res) => {
+      /*
+              This function uploads an image to firebase and returns url
+              params: req, res
+              return: url
+          */
+      try {
+      if (!req.params.type || req.params.type != 'image') {
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+          responses.CODE_INVALID_CALL, null, responses.MESSAGE_INVALID_CALL
+        ))
+      }
+      const image_url = await firebase_utils.UPLOAD_IMAGE(req.file)
+      if (!image_url) {
+        return res.status(200).send(responses.get_response_object(
+          responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
+        ))
+      }
+      return res.status(200).send(responses.get_response_object(
+        responses.CODE_SUCCESS, { url: image_url }, responses.MESSAGE_SUCCESS
+      ))
+      }
+      catch (e) {
+        console.log("Error from Upload Image Controller: " + e);
+        logger.error("Error from Upload Image Controller: " + e);
+        return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR));
+      }
     },
     socialLoginController: async (req, res) => {
         /*
