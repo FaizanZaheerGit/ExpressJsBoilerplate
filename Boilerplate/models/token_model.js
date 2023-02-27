@@ -13,7 +13,8 @@ const TokenSchema = new mongoose.Schema({
     is_expired: {type: Boolean, default: false},
     created_at: {type: Number, default: common_utils.get_current_epoch_time()},
     updated_at: {type: Number, default: common_utils.get_current_epoch_time()}
-});
+},
+{versionKey: false});
 
 const TokenModel = mongoose.model("token", TokenSchema);
 module.exports = TokenModel;

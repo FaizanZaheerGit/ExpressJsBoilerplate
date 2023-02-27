@@ -99,13 +99,9 @@ module.exports = {
         const schema = Joi.object({
             password: Joi.string().regex(RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,50}$')),
             email_address: Joi.string().email().trim(),
-            image: Joi.string().uri().allow([" ", ' ']),
+            image: Joi.string().uri().allow(...['', ' ']),
             token: Joi.string(),
-            name: Joi.object({
-                first: Joi.string(),
-                middle: Joi.string(),
-                last: Joi.string()
-            }),
+            name: Joi.string(),
             gender: Joi.object({
                 id: Joi.number(),
                 name: Joi.string()

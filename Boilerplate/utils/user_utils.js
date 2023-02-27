@@ -5,9 +5,8 @@ module.exports = {
         user_obj = {
             uid: user[constants.UID],
             name: user[constants.NAME],
-            full_name: (user[constants.NAME][constants.FIRST] + " " 
-            + user[constants.NAME][constants.MIDDLE] + " " + user[constants.NAME][constants.LAST]),
             email_address: user[constants.EMAIL_ADDRESS],
+            image: user[constants.IMAGE],
             status: user[constants.STATUS],
             created_at: user[constants.CREATED_AT],
             updated_at: user[constants.UPDATED_AT]

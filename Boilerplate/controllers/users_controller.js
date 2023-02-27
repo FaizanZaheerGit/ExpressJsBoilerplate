@@ -98,6 +98,10 @@ module.exports = {
                 null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID]))
             return res.status(responses.CODE_SUCCESS).send(response_obj);
         }
+        if (req["current_user"] != user._id) {
+          return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
+            responses.CODE_UNAUTHORIZED_ACCESS, null, responses.MESSAGE_UNAUTHORIZED_ACCESS ));
+        }
         const update_filter = req.body;
         delete update_filter.uid;
         if (update_filter.image == null || update_filter.image == '') {
