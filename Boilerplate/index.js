@@ -49,7 +49,7 @@ app.get("/api/logs/:type", authentication_middleware, (req, res) => {
             if (err) {
                 logger.error("ERROR FROM READ LOGS API: " + err + " PARAM DATA: " + req.params);
                 return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                    responses.CODE_GENERAL_ERROR, { error: error }, responses.MESSAGE_GENERAL_ERROR
+                    responses.CODE_GENERAL_ERROR, { error: err.message }, responses.MESSAGE_GENERAL_ERROR
                 ))
             }
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
@@ -62,7 +62,7 @@ app.get("/api/logs/:type", authentication_middleware, (req, res) => {
             if (err) {
                 logger.error("ERROR FROM READ LOGS API: " + err + " PARAM DATA: " + req.params);
                 return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-                    responses.CODE_GENERAL_ERROR, { error: error }, responses.MESSAGE_GENERAL_ERROR
+                    responses.CODE_GENERAL_ERROR, { error: err.message }, responses.MESSAGE_GENERAL_ERROR
                 ))
             }
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
