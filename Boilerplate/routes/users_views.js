@@ -55,8 +55,7 @@ router.delete('/delete/:id', async (req, res) => {
 
 router.post('/login', async (req, res) => {
     let required_list = [constants.EMAIL_ADDRESS, constants.PASSWORD];
-    let optional_list = [];
-    let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
+    let response = await common_utils.validate_request_body(req.body, required_list, [])
     if (response["response_code"] != 200) {
         logger.error(`Missing Paramters: ${JSON.stringify(response["response_message"])}`)
         return res.status(200).send(response)
@@ -71,8 +70,7 @@ router.get('/logout', authentication_middleware, async(req, res) => {
 
 router.post('/forget-password', async (req, res) => {
     let required_list = [constants.EMAIL_ADDRESS]
-    let optional_list = []
-    let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
+    let response = await common_utils.validate_request_body(req.body, required_list, [])
     if (response["response_code"] != 200) {
         return res.status(200).send(response);
     };
@@ -81,8 +79,7 @@ router.post('/forget-password', async (req, res) => {
 
 router.post('/reset-password', async (req, res) => {
     let required_list = [constants.UID, constants.TOKEN, constants.NEW_PASSWORD]
-    let optional_list = []
-    let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
+    let response = await common_utils.validate_request_body(req.body, required_list, [])
     if (response["response_code"] != 200) {
         return res.status(200).send(response);
     };
@@ -91,8 +88,7 @@ router.post('/reset-password', async (req, res) => {
 
 router.post('/change-password', authentication_middleware, async (req, res) => {
     let required_list = [constants.UID, constants.OLD_PASSWORD, constants.NEW_PASSWORD]
-    let optional_list = []
-    let response = await common_utils.validate_request_body(req.body, required_list, optional_list)
+    let response = await common_utils.validate_request_body(req.body, required_list, [])
     if (response["response_code"] != 200) {
         return res.status(200).send(response);
     };
