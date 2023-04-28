@@ -7,6 +7,7 @@ module.exports = {
             name: user[constants.NAME],
             email_address: user[constants.EMAIL_ADDRESS],
             image: user[constants.IMAGE],
+            registration_channel: user[constants.REGISTRATION_CHANNEL],
             status: user[constants.STATUS],
             created_at: user[constants.CREATED_AT],
             updated_at: user[constants.UPDATED_AT]

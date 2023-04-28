@@ -29,5 +29,6 @@ module.exports = {
     FACEBOOK: "facebook",
     APPLE: "apple",
     PAGE: "page",
-    LIMIT: "limit"
+    LIMIT: "limit",
+    REGISTRATION_CHANNEL: "registration_channel"
 }
