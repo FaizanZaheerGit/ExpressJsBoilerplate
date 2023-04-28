@@ -626,7 +626,6 @@ module.exports = {
           token_data[constants.TOKEN] = access_token;
           token_data[constants.PURPOSE] = constants.SESSION_MANAGEMENT;
           let token = await database_layer.db_insert_single_record(TokenModel, token_data);
-          let customer = await database_layer.db_read_single_record(customer_model, { user: user._id });
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
             responses.CODE_SUCCESS, 
             {token: token[constants.TOKEN], user: await userUtils.get_user_object(user) }, 
