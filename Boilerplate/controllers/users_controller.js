@@ -239,6 +239,12 @@ module.exports = {
           */
       try {
         const read_filter = { email_address: req.body.email_address };
+        const { error } = await common_utils.validate_data(req.body);
+        if (error) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
+            ))
+        }
         let user = await database_layer.db_read_single_record(UsersModel, read_filter);
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
@@ -275,6 +281,12 @@ module.exports = {
           */
   
       try {
+        const { error } = await common_utils.validate_data(req.body);
+        if (error) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
+            ))
+        }
         let user = await database_layer.db_read_single_record(UsersModel, { uid: req.body.uid });
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
@@ -313,6 +325,12 @@ module.exports = {
               return:
           */
       try {
+        const { error } = await common_utils.validate_data(req.body);
+        if (error) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
+            ))
+        }
         let user = await database_layer.db_read_single_record(UsersModel, { uid: req.body.uid });
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
@@ -381,7 +399,13 @@ module.exports = {
           return:
       */
       try {
-        let oauth_code = req.body[constants.OAUTH_CODE]
+        const { error } = await common_utils.validate_data(req.body);
+        if (error) {
+            return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
+                responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
+            ))
+        }
+        let oauth_code = req.body[constants.OAUTH_CODE];
         req.params.channel = await req.params.channel.trim().toLowerCase()
         if (req.params.channel != 'google' && req.params.channel != 'facebook' && req.params.channel != 'apple') {
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(

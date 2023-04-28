@@ -98,6 +98,7 @@ module.exports = {
     validate_data: async (body) => {
         const schema = Joi.object({
             password: Joi.string().regex(RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,50}$')),
+            new_password: Joi.string().regex(RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,50}$')),
             email_address: Joi.string().email().trim(),
             image: Joi.string().uri().allow(...['', ' ']),
             token: Joi.string(),
@@ -107,7 +108,8 @@ module.exports = {
                 name: Joi.string()
             }),
             id: Joi.string(),
-            uid: Joi.string()
+            uid: Joi.string().uuid(),
+            oauth_code: Joi.string()
         });
         return schema.validate(body);
     },
