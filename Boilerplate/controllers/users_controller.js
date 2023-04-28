@@ -70,7 +70,12 @@ module.exports = {
         */
         try {
         const read_filter = req.query || {};
-        let users = await database_layer.db_read_multiple_records(userModel, read_filter);
+        let pageOptions = {};
+        if (Object.keys(read_filter).includes(constants.PAGE) && Object.keys(read_filter).includes(constants.LIMIT)) {
+            pageOptions[constants.PAGE] = parseInt(read_filter[constants.PAGE], 10);
+            pageOptions[constants.LIMIT] = parseInt(read_filter[constants.LIMIT], 10);
+        }
+        let users = await database_layer.db_read_multiple_records(userModel, read_filter, pageOptions);
         users = await userUtils.filter_user_object(users);
         return res.status(responses.CODE_SUCCESS).send(
             responses.get_response_object(responses.CODE_SUCCESS, {users: users}, responses.MESSAGE_SUCCESS));

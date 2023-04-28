@@ -27,5 +27,7 @@ module.exports = {
     PURPOSE: "purpose",
     GOOGLE: "google",
     FACEBOOK: "facebook",
-    APPLE: "apple"
+    APPLE: "apple",
+    PAGE: "page",
+    LIMIT: "limit"
 }

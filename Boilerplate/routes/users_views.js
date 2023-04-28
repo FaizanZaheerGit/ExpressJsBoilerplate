@@ -28,7 +28,7 @@ router.post('/create', async (req, res) => {
 
 router.get('/read', async (req, res) => {
     let required_list = [];
-    let optional_list = [constants.EMAIL_ADDRESS];
+    let optional_list = [constants.EMAIL_ADDRESS, constants.PAGE, constants.LIMIT];
     let response = await common_utils.validate_request_body(req.query, required_list, optional_list)
     if (response["response_code"] != 200) {
         return res.status(200).send(response)
