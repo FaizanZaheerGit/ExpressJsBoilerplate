@@ -10,6 +10,16 @@ module.exports = {
         let new_data = await collection.create(insert_data);
         return new_data;
     },
+    db_insert_many_records: async (collection, insert_data) => {
+        insert_data.forEach(item => {
+            item[constants.UID] = uuidv4();
+            item[constants.CREATED_AT] = common_utils.get_current_epoch_time();
+            item[constants.UPDATED_AT] = common_utils.get_current_epoch_time();
+        });
+
+        let new_data = await collection.insertMany(insert_data);
+        return new_data;
+    },
     db_read_single_record: async (collection, read_filter) => {
         return await collection.findOne(read_filter);
     },
