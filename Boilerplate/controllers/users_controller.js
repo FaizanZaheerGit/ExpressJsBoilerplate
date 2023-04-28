@@ -555,7 +555,7 @@ module.exports = {
           let client_secret = jwt.sign({}, config.APPLE_CONFIG["private_key"], {
             algorithm: 'ES256',
             expiresIn: '1h',
-            audience: APPLE_DOMAIN,
+            audience: "APPLE_DOMAIN",
             issuer: config.APPLE_CONFIG["team_id"],
             subject: config.APPLE_CONFIG["service_id"],
             keyid: config.APPLE_CONFIG["key_id"]
