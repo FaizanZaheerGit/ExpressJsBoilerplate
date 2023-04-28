@@ -2,6 +2,7 @@ const cors = require('cors');
 const bodyParser = require("body-parser");
 const express = require('express');
 const fs = require('fs');
+const helmet = require('helmet');
 const authentication_middleware = require('./middlewares/authentication_middleware');
 const responses = require('./utils/responses');
 const static_data = require('./config/static_data');
@@ -10,7 +11,8 @@ const firebase_utils = require('./utils/firebase_utils');
 const app = express();
 app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+app.use(helmet());
 
 
 require('dotenv').config()
