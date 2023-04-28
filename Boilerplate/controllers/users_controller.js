@@ -4,7 +4,6 @@ const userModel = require('../models/user_model');
 const userUtils = require('../utils/user_utils');
 const constants = require('../utils/constants');
 const common_utils = require('../utils/common_utils');
-const UsersModel = require('../models/user_model');
 const TokenModel = require('../models/token_model');
 const logger = require('../logger/logger');
 const config = require('../config/config');
@@ -38,7 +37,7 @@ module.exports = {
         }
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
         insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].toLowerCase();
-        let existing_user = await database_layer.db_read_single_record(UsersModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
+        let existing_user = await database_layer.db_read_single_record(userModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
         if(existing_user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_ALREADY_EXISTS, null, responses.MESSAGE_ALREADY_EXISTS([constants.USER, constants.EMAIL_ADDRESS])
@@ -179,7 +178,7 @@ module.exports = {
         }
         token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].trim();
         token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].toLowerCase();
-        let user = await database_layer.db_read_single_record(UsersModel, {email_address: token_data[constants.EMAIL_ADDRESS]})
+        let user = await database_layer.db_read_single_record(userModel, {email_address: token_data[constants.EMAIL_ADDRESS]})
         if(!user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_UNPROCESSABLE_ENTITY, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD)
@@ -245,7 +244,7 @@ module.exports = {
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
         }
-        let user = await database_layer.db_read_single_record(UsersModel, read_filter);
+        let user = await database_layer.db_read_single_record(userModel, read_filter);
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
             responses.CODE_INVALID_CALL, null,
@@ -287,7 +286,7 @@ module.exports = {
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
         }
-        let user = await database_layer.db_read_single_record(UsersModel, { uid: req.body.uid });
+        let user = await database_layer.db_read_single_record(userModel, { uid: req.body.uid });
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
             responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID])
@@ -307,7 +306,7 @@ module.exports = {
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
             responses.CODE_INVALID_CALL, null, responses.MESSAGE_SAME_PASSWORD ));
         }
-        user = await database_layer.db_update_single_record( UsersModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt });
+        user = await database_layer.db_update_single_record( userModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt });
         token = await database_layer.db_update_multiple_records( TokenModel, { token: req.body.token }, { is_expired: true, expiry_time: common_utils.get_current_epoch_time() } );
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
           responses.CODE_SUCCESS, null, responses.MESSAGE_PASSWORD_UPDATED_SUCCESSFULLY ));
@@ -331,7 +330,7 @@ module.exports = {
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
         }
-        let user = await database_layer.db_read_single_record(UsersModel, { uid: req.body.uid });
+        let user = await database_layer.db_read_single_record(userModel, { uid: req.body.uid });
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
             responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID])
@@ -354,7 +353,7 @@ module.exports = {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
             responses.CODE_SUCCESS, null, responses.MESSAGE_SAME_PASSWORD ));
         }
-        user = await database_layer.db_update_single_record( UsersModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt } );
+        user = await database_layer.db_update_single_record( userModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt } );
         return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
           responses.CODE_SUCCESS, null, responses.MESSAGE_PASSWORD_UPDATED_SUCCESSFULLY ));
       } catch (e) {
