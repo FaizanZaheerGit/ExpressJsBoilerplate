@@ -8,7 +8,11 @@
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FaizanZaheerGit/ExpressJsBoilerplate"
+  },
+  "keywords": ["express", "mongoose", "boilerplate", "node", "javascript", "express-js", "js"],
   "author": "",
   "license": "ISC",
   "devDependencies": {
