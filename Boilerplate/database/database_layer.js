@@ -25,7 +25,7 @@ module.exports = {
     },
     db_read_multiple_records: async (collection, read_filter, pageOptions={}) => {
         if(Object.keys(pageOptions).length != 0) {
-            return collection.find(read_filter).skip(pageOptions.page * pageOptions.limit).limit(pageOptions.limit).sort({created_at: -1});
+            return collection.find(read_filter).skip( (pageOptions.page - 1) * pageOptions.limit).limit(pageOptions.limit).sort({created_at: -1});
         }
         else {
             return await collection.find(read_filter).sort({created_at: -1});
