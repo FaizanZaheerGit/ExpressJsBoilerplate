@@ -33,11 +33,10 @@ module.exports = {
             ))
         }
         if (insert_data.image == ' ') {
-          insert_data[constants.IMAGE] = ""
+          insert_data[constants.IMAGE] = "";
         }
-        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim();
-        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].toLowerCase();
-        let existing_user = await database_layer.db_read_single_record(userModel, {email_address: insert_data[constants.EMAIL_ADDRESS]})
+        insert_data[constants.EMAIL_ADDRESS] = await insert_data[constants.EMAIL_ADDRESS].trim().toLowerCase();
+        let existing_user = await database_layer.db_read_single_record(userModel, {email_address: insert_data[constants.EMAIL_ADDRESS]}, { email_address: 1 });
         if(existing_user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_ALREADY_EXISTS, null, responses.MESSAGE_ALREADY_EXISTS([constants.USER, constants.EMAIL_ADDRESS])
@@ -47,12 +46,12 @@ module.exports = {
         insert_data[constants.PASSWORD] = password_array[0];
         insert_data[constants.PASSWORD_SALT] = password_array[1];
         let new_user = await database_layer.db_insert_single_record(userModel, insert_data);
-        var new_user_obj = userUtils.get_user_object(new_user);
+        let new_user_obj = await userUtils.get_user_object(new_user);
         return res.status(responses.CODE_CREATED).send(
             responses.get_response_object(responses.CODE_CREATED, {user: new_user_obj}, responses.MESSAGE_CREATED(constants.USER)));
         }
         catch (err) {
-            logger.error("ERROR FROM CREATE CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body))
+            logger.error("ERROR FROM CREATE CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body));
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
@@ -62,7 +61,7 @@ module.exports = {
     },
     readController: async(req, res) => {
         /*
-            This function will read a list of all users, based on filters,
+            This function will `read a list of all users, based on filters,
             if no filters given, it returns all users
             parameters: request, response
             return:
@@ -70,12 +69,12 @@ module.exports = {
         try {
         const read_filter = req.query || {};
         let pageOptions = {};
-        if (Object.keys(read_filter).includes(constants.PAGE) && Object.keys(read_filter).includes(constants.LIMIT)) {
+        if (read_filter.page && read_filter.limit) {
             pageOptions[constants.PAGE] = parseInt(read_filter[constants.PAGE], 10);
             pageOptions[constants.LIMIT] = parseInt(read_filter[constants.LIMIT], 10);
+            delete read_filter.page;
+            delete read_filter.limit;
         }
-        delete read_filter.page;
-        delete read_filter.limit;
         let users = await database_layer.db_read_multiple_records(userModel, read_filter, pageOptions);
         users = await userUtils.filter_user_object(users);
         return res.status(responses.CODE_SUCCESS).send(
@@ -97,11 +96,11 @@ module.exports = {
             return:
         */
         try {
-        const read_filter = { uid: req.body.uid };
-        let user = await database_layer.db_read_single_record(userModel, read_filter);
+        const read_filter = { _id: req.body.id };
+        let user = await database_layer.db_read_single_record(userModel, read_filter, { _id: 1 });
         if (!user) {
             let response_obj = responses.get_response_object(responses.CODE_UNPROCESSABLE_ENTITY,
-                null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID]))
+                null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.ID]))
             return res.status(responses.CODE_SUCCESS).send(response_obj);
         }
         if (req["current_user"] != user._id) {
@@ -109,7 +108,7 @@ module.exports = {
             responses.CODE_UNAUTHORIZED_ACCESS, null, responses.MESSAGE_UNAUTHORIZED_ACCESS ));
         }
         const update_filter = req.body;
-        delete update_filter.uid;
+        delete update_filter.id;
         if (update_filter.image == null || update_filter.image == '') {
           update_filter[constants.IMAGE] = ' ';
         }
@@ -125,7 +124,7 @@ module.exports = {
         let update_user = await database_layer.db_update_single_record(userModel, read_filter, update_filter);
         update_user = await database_layer.db_read_single_record(userModel, read_filter);
         return res.status(200).send(responses.get_response_object(responses.CODE_SUCCESS,
-            {user: userUtils.get_user_object(update_user)}, responses.MESSAGE_SUCCESS));
+            {user: await userUtils.get_user_object(update_user)}, responses.MESSAGE_SUCCESS));
         }
         catch (err) {
             logger.error("ERROR FROM UPDATE CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body))
@@ -143,14 +142,14 @@ module.exports = {
             return:
         */
         try {
-        const delete_filter = { uid: req.params.id };
-        let user = await database_layer.db_read_single_record(userModel, delete_filter);
+        const delete_filter = { _id: req.params.id };
+        let user = await database_layer.db_read_single_record(userModel, { _id: req.params.id }, { _id: 1 });
         if (!user) {
             let response_obj = responses.get_response_object(responses.CODE_UNPROCESSABLE_ENTITY,
-                null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID]))
+                null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.ID]))
             return res.status(responses.CODE_SUCCESS).send(response_obj);
         }
-        let deleted_user = await database_layer.db_delete_record(userModel, delete_filter);
+        await database_layer.db_delete_record(userModel, delete_filter);
         let users = await database_layer.db_read_multiple_records(userModel, {});
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
             {users: userUtils.filter_user_object(users)}, responses.MESSAGE_SUCCESS));
@@ -178,9 +177,8 @@ module.exports = {
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + " key: " + error.details[0].context?.key
             ))
         }
-        token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].trim();
-        token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].toLowerCase();
-        let user = await database_layer.db_read_single_record(userModel, {email_address: token_data[constants.EMAIL_ADDRESS]})
+        token_data[constants.EMAIL_ADDRESS] = await token_data[constants.EMAIL_ADDRESS].trim().toLowerCase();
+        let user = await database_layer.db_read_single_record(userModel, {email_address: token_data[constants.EMAIL_ADDRESS]});
         if(!user) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_UNPROCESSABLE_ENTITY, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD)
@@ -192,21 +190,21 @@ module.exports = {
                 responses.CODE_UNPROCESSABLE_ENTITY, null, responses.MESSAGE_INVALID_EMAIL_ADDRESS_OR_PASSWORD)
             )
         }
-        delete token_data[constants.EMAIL_ADDRESS]
-        delete token_data[constants.PASSWORD]
+        delete token_data[constants.EMAIL_ADDRESS];
+        delete token_data[constants.PASSWORD];
         token_data[constants.USER] = user;
-        const updated_tokens = await database_layer.db_update_multiple_records(TokenModel, { user: token_data[constants.USER] }, 
-            { is_expired: true, expiry_time: common_utils.get_current_epoch_time(), purpose: "session_management" })
+        await database_layer.db_update_multiple_records(TokenModel, { user: token_data[constants.USER], purpose: 'session_management' }, 
+            { is_expired: true, expiry_time: common_utils.get_current_epoch_time() });
         const user_data = JSON.stringify(user);
-        let access_token = await common_utils.create_jwt_token(user_data)
-        token_data[constants.TOKEN] = access_token
-        token_data[constants.PURPOSE] = "session_management"
-        let token = await database_layer.db_insert_single_record(TokenModel, token_data)
+        let access_token = await common_utils.create_jwt_token(user_data);
+        token_data[constants.TOKEN] = access_token;
+        token_data[constants.PURPOSE] = "session_management";
+        let token = await database_layer.db_insert_single_record(TokenModel, token_data);
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS,
             {token: token[constants.TOKEN]}, responses.MESSAGE_SUCCESS));
         }
         catch (err) {
-            logger.error("ERROR FROM LOGIN CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body))
+            logger.error("ERROR FROM LOGIN CONTROLLER: " + err + " POST DATA: " + JSON.stringify(req.body));
             return res.status(200).send(
                 responses.get_response_object(
                     responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
@@ -218,8 +216,8 @@ module.exports = {
         try {
         const auth_header = req.headers['authorization'];
         const token = auth_header && auth_header.split(' ')[1];
-        const updated_token = await database_layer.db_update_single_record(TokenModel, { token: token }, 
-            { is_expired: true, expiry_time: common_utils.get_current_epoch_time() })
+        await database_layer.db_update_single_record(TokenModel, { token: token }, 
+            { is_expired: true, expiry_time: common_utils.get_current_epoch_time() });
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(responses.CODE_SUCCESS, null, 
             responses.MESSAGE_SUCCESS));
         }
@@ -234,19 +232,18 @@ module.exports = {
     },
     forget_password_controller: async (req, res) => {
       /*
-              This function will send an email along with the access token to user to reset there password
-              parameters: request, response
-             return:
-          */
+        This function will send an email along with the access token to user to reset there password
+        parameters: request, response
+        return:
+      */
       try {
-        const read_filter = { email_address: req.body.email_address };
         const { error } = await common_utils.validate_data(req.body);
         if (error) {
             return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
         }
-        let user = await database_layer.db_read_single_record(userModel, read_filter);
+        let user = await database_layer.db_read_single_record(userModel, { email_address: req.body.email_address });
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
             responses.CODE_INVALID_CALL, null,
@@ -256,16 +253,13 @@ module.exports = {
         await database_layer.db_update_multiple_records(TokenModel, { user: user, purpose: "Reset Password" }, { is_expired: true, expiry_time: common_utils.get_current_epoch_time() });
         let insert_token_data = {};
         let token = uuidv4();
-        let url = "https://www.example.com/" + user.uid + "/" + token;
+        let url = "https://www.example.com/" + user._id + "/" + token;
         insert_token_data[constants.USER] = user;
-        insert_token_data[constants.PURPOSE] = "Reset Password";
+        insert_token_data[constants.PURPOSE] = "reset password";
         insert_token_data[constants.TOKEN] = token;
-        let new_token = await database_layer.db_insert_single_record(TokenModel, insert_token_data);
-        let send_mail = await common_utils.send_mail_to_user(
-          process.env.FROM,
-          user.email_address,
-          "RESET PASSWORD",
-          "<p>Hi " + user.name + ", Click the link below to reset your password:\n" + url );
+        await database_layer.db_insert_single_record(TokenModel, insert_token_data);
+        let email_html = `<h1 style='font-family: Arial, Helvetica, sans-serif;text-align: center;text-decoration: underline;'>Pre-CTMS</h1><h2 style='font-family: Arial, Helvetica, sans-serif;text-align: center;'>Reset Password</h2><hr style='width: 75%;background: #00466a;height: 4px;'><br /><p style='font-family: Arial, Helvetica, sans-serif;font-size: 17px;'>Hi ${user[constants[constants.NAME]]},<br />We have received a request from your account </p><br /><p style='font-family: Arial, Helvetica, sans-serif;font-size: 17px;'>To Reset Your Password click the button below:</p><a href='${url}' target='blank'><button style='background: #00446a;margin: 0 auto;width: max-content;padding: 8px 20px;color: #fff;border-radius: 18px;font-size: 17px;font-family: Arial, Helvetica, sans-serif;'>Reset Password</button></a><br /><br /><p style='font-family: Arial, Helvetica, sans-serif;font-size: 17px;'>or copy and paste the following URL:<br />${url}</p><br /><p style='font-family: Arial, Helvetica, sans-serif;font-size: 17px;'><b>Regards,<br/>Pre-CTMS Team</b></p>`;
+        await common_utils.send_mail_to_user( process.env.FROM, user.email_address, "RESET PASSWORD", email_html );
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
           responses.CODE_SUCCESS, null, responses.MESSAGE_MAIL_SENT_SUCCESSFULLY ));
       } catch (e) {
@@ -276,11 +270,11 @@ module.exports = {
       }
     },
     reset_passsword_controller: async (req, res) => {
-      /* This function will reset the password and expire old access token
-              parameters: request, response
-             return:
-          */
-  
+      /* 
+        This function will reset the password and expire old access token
+        parameters: request, response
+        return:
+      */
       try {
         const { error } = await common_utils.validate_data(req.body);
         if (error) {
@@ -288,13 +282,13 @@ module.exports = {
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
         }
-        let user = await database_layer.db_read_single_record(userModel, { uid: req.body.uid });
+        let user = await database_layer.db_read_single_record(userModel, { _id: req.body.id }, { _id: 1 });
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
-            responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID])
+            responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.ID])
             ));
         }
-        let token = await database_layer.db_read_single_record(TokenModel, { user: user, token: req.body.token, purpose: "Reset Password", is_expired: false });
+        let token = await database_layer.db_read_single_record(TokenModel, { user: user, token: req.body.token, purpose: "reset password", is_expired: false }, { _id: 1 });
         if (!token) {
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
             responses.CODE_INVALID_CALL, null, responses.MESSAGE_INVALID_TOKEN ));
@@ -308,8 +302,8 @@ module.exports = {
           return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
             responses.CODE_INVALID_CALL, null, responses.MESSAGE_SAME_PASSWORD ));
         }
-        user = await database_layer.db_update_single_record( userModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt });
-        token = await database_layer.db_update_multiple_records( TokenModel, { token: req.body.token }, { is_expired: true, expiry_time: common_utils.get_current_epoch_time() } );
+        user = await database_layer.db_update_single_record( userModel, { _id: req.body.id }, { password: new_password, password_salt: password_salt });
+        token = await database_layer.db_update_single_record( TokenModel, { token: req.body.token }, { is_expired: true, expiry_time: common_utils.get_current_epoch_time() } );
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
           responses.CODE_SUCCESS, null, responses.MESSAGE_PASSWORD_UPDATED_SUCCESSFULLY ));
       } catch (e) {
@@ -321,10 +315,10 @@ module.exports = {
     },
     change_passsword_controller: async (req, res) => {
       /*
-              This function will change the password of the logged in user
-              parameters: request, response
-              return:
-          */
+          This function will change the password of the logged in user
+          parameters: request, response
+          return:
+      */
       try {
         const { error } = await common_utils.validate_data(req.body);
         if (error) {
@@ -332,10 +326,10 @@ module.exports = {
                 responses.CODE_VALIDATION_FAILED, responses.MESSAGE_VALIDATION_FAILED + ": " + error.details[0].context?.key
             ))
         }
-        let user = await database_layer.db_read_single_record(userModel, { uid: req.body.uid });
+        let user = await database_layer.db_read_single_record(userModel, { _id: req.body.id }, { _id: 1, password: 1 });
         if (!user) {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
-            responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.UID])
+            responses.CODE_INVALID_CALL, null, responses.MESSAGE_NOT_FOUND([constants.USER, constants.ID])
           ));
         }
         if (req["current_user"] != user._id) {
@@ -355,7 +349,7 @@ module.exports = {
           return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
             responses.CODE_SUCCESS, null, responses.MESSAGE_SAME_PASSWORD ));
         }
-        user = await database_layer.db_update_single_record( userModel, { uid: req.body.uid }, { password: new_password, password_salt: password_salt } );
+        user = await database_layer.db_update_single_record( userModel, { _id: req.body.id }, { password: new_password, password_salt: password_salt } );
         return res.status(responses.CODE_SUCCESS).send( responses.get_response_object(
           responses.CODE_SUCCESS, null, responses.MESSAGE_PASSWORD_UPDATED_SUCCESSFULLY ));
       } catch (e) {
@@ -367,17 +361,17 @@ module.exports = {
     },
     uploadImageController: async (req, res) => {
       /*
-              This function uploads an image to firebase and returns url
-              params: req, res
-              return: url
-          */
+          This function uploads an image to firebase and returns url
+          params: req, res
+          return: url
+      */
       try {
       if (!req.params.type || req.params.type != 'image') {
         return res.status(responses.CODE_SUCCESS).send(responses.get_response_object(
           responses.CODE_INVALID_CALL, null, responses.MESSAGE_INVALID_CALL
         ))
       }
-      const image_url = await firebase_utils.UPLOAD_IMAGE(req.file)
+      const image_url = await firebase_utils.UPLOAD_IMAGE(req.file);
       if (!image_url) {
         return res.status(200).send(responses.get_response_object(
           responses.CODE_GENERAL_ERROR, null, responses.MESSAGE_GENERAL_ERROR
@@ -394,7 +388,7 @@ module.exports = {
       }
     },
     socialLoginController: async (req, res) => {
-        /*
+      /*
           This function will socially login the account from the third party application's account
           parameters: request, response
           return:
@@ -457,7 +451,7 @@ module.exports = {
     
           let user = {}
           let existing_user = await database_layer.db_read_single_record(userModel, 
-            { oauth_code: google_user_info_uri["id"], registration_channel: static_data.REGISTRATION_CHANNELS[1], status: static_data.STATUSES[0] })
+            { oauth_code: google_user_info_uri["id"], registration_channel: static_data.REGISTRATION_CHANNELS[1], status: static_data.STATUSES[0] });
     
           if(!existing_user) {
             let user_insert_data = {
@@ -467,15 +461,15 @@ module.exports = {
               registration_channel: static_data.REGISTRATION_CHANNELS[1],
               status: static_data.STATUSES[0]
             }
-            let new_user = await database_layer.db_insert_single_record(userModel, user_insert_data)
-            user = new_user
+            let new_user = await database_layer.db_insert_single_record(userModel, user_insert_data);
+            user = new_user;
           }
           else {
-            user = existing_user
+            user = existing_user;
           }
           let token_data = {}
           token_data[constants.USER] = user
-          const updated_tokens = await database_layer.db_update_multiple_records(
+          await database_layer.db_update_multiple_records(
             TokenModel,
             { user: token_data[constants.USER], purpose: "session_management" },
             { is_expired: true, expiry_time: common_utils.get_current_epoch_time() }
@@ -512,13 +506,13 @@ module.exports = {
           console.log('RESPONSE FROM FACEBOOK USER INFO URI: ' + JSON.stringify(facebook_user_info_uri))
           logger.info('RESPONSE FROM FACEBOOK USER INFO URI' + JSON.stringify(facebook_user_info_uri))
     
-          let user = {}
+          let user = {};
           if (!facebook_user_info_uri.hasOwnProperty("email")) {
-                let uid = uuidv4().substring(0, 5)
-                facebook_user_info_uri["email"] = "User-" + uid + "@mail.com"
+                let uid = uuidv4().substring(0, 5);
+                facebook_user_info_uri["email"] = "User-" + uid + "@mail.com";
           }
           let existing_user = await database_layer.db_read_single_record(userModel, 
-            { oauth_code: facebook_user_info_uri["id"], registration_channel: static_data.REGISTRATION_CHANNELS[2], status: static_data.STATUSES[0] })
+            { oauth_code: facebook_user_info_uri["id"], registration_channel: static_data.REGISTRATION_CHANNELS[2], status: static_data.STATUSES[0] });
 
           if (!existing_user) {
             let user_insert_data = {
@@ -528,15 +522,15 @@ module.exports = {
               registration_channel: static_data.REGISTRATION_CHANNELS[2],
               status: static_data.STATUSES[0]
             }
-            let new_user = await database_layer.db_insert_single_record(userModel, user_insert_data)
-            user = new_user
+            let new_user = await database_layer.db_insert_single_record(userModel, user_insert_data);
+            user = new_user;
           }
           else {
-            user = existing_user
+            user = existing_user;
           }
-          let token_data = {}
-          token_data[constants.USER] = user
-          const updated_tokens = await database_layer.db_update_multiple_records(
+          let token_data = {};
+          token_data[constants.USER] = user;
+          await database_layer.db_update_multiple_records(
             TokenModel,
             { user: token_data[constants.USER], purpose: "session_management" },
             { is_expired: true, expiry_time: common_utils.get_current_epoch_time() }
@@ -599,7 +593,7 @@ module.exports = {
           logger.info("ID TOKEN FOR APPLE SIGN: : ", JSON.stringify(apple_user_info))
     
           let existing_user = await database_layer.db_read_single_record(userModel, 
-            { oauth_code: apple_user_info["email"], registration_channel: static_data.REGISTRATION_CHANNELS[3], status: static_data.STATUSES[0] })
+            { oauth_code: apple_user_info["email"], registration_channel: static_data.REGISTRATION_CHANNELS[3], status: static_data.STATUSES[0] });
 
           let user = {}
           if (!existing_user) {
@@ -610,15 +604,15 @@ module.exports = {
               registration_channel: static_data.REGISTRATION_CHANNELS[3],
               status: static_data.STATUSES[0]
             }
-            let new_user = await database_layer.db_insert_single_record(userModel, user_insert_data)
-            user = new_user
+            let new_user = await database_layer.db_insert_single_record(userModel, user_insert_data);
+            user = new_user;
           }
           else {
-            user = existing_user
+            user = existing_user;
           }
-          let token_data = {}
-          token_data[constants.USER] = user
-          const updated_tokens = await database_layer.db_update_multiple_records(
+          let token_data = {};
+          token_data[constants.USER] = user;
+          await database_layer.db_update_multiple_records(
             TokenModel,
             { user: token_data[constants.USER], purpose: "session_management" },
             { is_expired: true, expiry_time: common_utils.get_current_epoch_time() }

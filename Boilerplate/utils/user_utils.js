@@ -1,9 +1,9 @@
 const constants = require("./constants")
 
 module.exports = {
-    get_user_object: (user) => {
+    get_user_object: async (user) => {
         user_obj = {
-            uid: user[constants.UID],
+            id: user[constants.ID],
             name: user[constants.NAME],
             email_address: user[constants.EMAIL_ADDRESS],
             image: user[constants.IMAGE],
@@ -14,7 +14,7 @@ module.exports = {
         }
         return user_obj;
     },
-    filter_user_object: function (users) {
+    filter_user_object: async function (users) {
         user_list = []
         for (var i = 0; i < users.length; i++) {
             user_list.push( this.get_user_object(users[i]) );

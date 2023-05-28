@@ -1,11 +1,9 @@
 const mongoose = require('mongoose');
-const { v4 : uuidv4 } = require('uuid')
 const common_utils = require('../utils/common_utils');
 
 const Schema = mongoose.Schema;
 
 const TokenSchema = new mongoose.Schema({
-    uid: {type: String, required: true, unique: true, default: uuidv4()},
     user: { type: Schema.Types.ObjectId, ref: 'users' },
     token: {type: String, default: ""},
     purpose: {type: String, default: ""},

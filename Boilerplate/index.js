@@ -9,7 +9,7 @@ const static_data = require('./config/static_data');
 const firebase_utils = require('./utils/firebase_utils');
 
 const app = express();
-app.use(cors())
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(helmet());
@@ -27,9 +27,8 @@ const firebase_app = firebase_utils.FIREBASE_APP;
 
 // ROUTES
 app.get("/", (req, res) => {
-    res.status(200).send(responses.get_response_object(response_code=responses.CODE_SUCCESS,
-        response_data=null, response_message="Server is Up And Running"))
-    logger.info('200: Server is Up and Running')
+    res.status(200).send(responses.get_response_object(responses.CODE_SUCCESS, null, "Server is Up And Running"));
+    logger.info('200: Server is Up and Running');
     return;
 });
 

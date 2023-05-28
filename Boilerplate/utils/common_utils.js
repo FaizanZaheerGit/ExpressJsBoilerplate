@@ -107,17 +107,17 @@ module.exports = {
                 id: Joi.number(),
                 name: Joi.string()
             }),
-            id: Joi.string(),
-            uid: Joi.string().uuid(),
+            id: Joi.string().hex().length(24),
             oauth_code: Joi.string()
         });
         return schema.validate(body);
     },
     send_mail_to_user: async (from, to, subject, body) => {
-        /* This function will send otp code to the relevant customer's email-address
-        parameters:from, to, subject, body
+        /* 
+            This function will send otp code to the relevant customer's email-address
+            parameters:from, to, subject, body
             return:
-            */
+        */
         try {
             var transporter = nodemailer.createTransport(
                 {
