@@ -2,10 +2,10 @@ module.exports = {
     get_response_object: (statusCode, data=null, message=null) => {
         let response = {};
         response["statusCode"] = statusCode;
-        if (response_data) {
+        if (data) {
             response["data"] = data;
         }
-        if (response_message) {
+        if (message) {
             response["message"] = message;
         }
         return response;

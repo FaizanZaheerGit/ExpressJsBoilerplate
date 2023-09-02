@@ -2,7 +2,7 @@ const cors = require('cors');
 const bodyParser = require("body-parser");
 const express = require('express');
 const fs = require('fs');
-import helmet from "helmet";
+const helmet = require('helmet');
 const authentication_middleware = require('./middlewares/authentication_middleware');
 const responses = require('./utils/responses');
 const static_data = require('./config/static_data');

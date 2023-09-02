@@ -42,34 +42,29 @@ module.exports = {
             parameters: request_body, requried_params, optional_params
             return:
         */
-        var request_body_keys = Object.keys(request_body);
-        var all = required_params.concat(optional_params);
-        var missing_list = []
+        const missing_list = [];
+        const allowed_params = new Set([...required_params, ...optional_params]);
 
-        for (let i = 0; i < required_params.length; i++){
-            if (request_body.hasOwnProperty(required_params[i]) == false){
-                missing_list.push(required_params[i])
-            }
-            else if (request_body[required_params[i]] === undefined || request_body[required_params[i]] === ""){
-                missing_list.push(required_params[i])
-            }
-
-            if (typeof(request_body[required_params[i]]) == "object"){
-                if (Object.keys(request_body[required_params[i]]).length == 0) {
-                    missing_list.push(required_params[i])
-                }
+        for (const param of required_params) {
+            if (!(param in request_body) || request_body[param] === undefined || request_body[param] === "") {
+                missing_list.push(param);
+            } else if (typeof request_body[param] === "object" && Object.keys(request_body[param]).length === 0) {
+                missing_list.push(param);
             }
         }
-        if (missing_list.length != 0) {
+    
+        if (missing_list.length !== 0) {
             return responses.get_response_object(responses.CODE_MISSING_PARAMETERS,
-                    null, responses.MESSAGE_MISSING_PARAMTERS(missing_list))
+                null, responses.MESSAGE_MISSING_PARAMTERS(missing_list));
         }
-        for (let j = 0; j < request_body_keys.length; j++){
-            if (!(all.includes(request_body_keys[j]))){
-                delete request_body[request_body_keys[j]]
+    
+        for (const key in request_body) {
+            if (!allowed_params.has(key)) {
+                delete request_body[key];
             }
         }
-        return responses.get_response_object(responses.CODE_SUCCESS, request_body, responses.MESSAGE_SUCCESS)
+    
+        return responses.get_response_object(responses.CODE_SUCCESS, request_body, responses.MESSAGE_SUCCESS);
     },
     create_jwt_token: async (data) => {
         /*
