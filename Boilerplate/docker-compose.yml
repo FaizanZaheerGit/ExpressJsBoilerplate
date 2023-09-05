@@ -1,12 +1,30 @@
 version: "3.8"
 services:
-  apis:
-    build: .
+  mongodb:
+    image: mongo:5.0
+    container_name: express-test-mongo
+    restart: unless-stopped
+    env_file:
+      - .env
     ports:
-      - "5000:5000"
-  database:
-    image: mongo:4.0-xenial
-    ports:
-      - 27017:27017
+      - 27018:27017
     volumes:
-      - ./data:/data/db
+      - mongodb_container:/data/db
+
+  apis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - ${PORT}:${PORT}
+    command: npm run start
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_container:
